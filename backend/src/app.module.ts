@@ -9,6 +9,9 @@ import { SalesModule } from './modules/sales/sales.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { InvoicesModule } from './modules/invoices/invoices.module';
 
 @Module({
   imports: [
@@ -16,6 +19,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
       isGlobal: true,
       envFilePath: '.env',
     }),
+    EventEmitterModule.forRoot(),
     PrismaModule,
     AuthModule,
     UsersModule,
@@ -24,7 +28,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     CustomersModule,
     AnalyticsModule,
     NotificationsModule,
+    PaymentsModule,
+    InvoicesModule,
   ],
   controllers: [AppController], // ← ADICIONE ESTA LINHA
 })
-export class AppModule {}
+export class AppModule { }

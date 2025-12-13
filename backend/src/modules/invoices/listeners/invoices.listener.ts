@@ -12,6 +12,6 @@ export class InvoiceListeners {
         console.log('Opa! Dinheiro na conta. Vamos emitir a nota para:', payload.orderId);
 
         // Chama a lógica de falar com a API de Nota Fiscal
-        await this.invoicesService.emitirNotaFiscal(payload.orderId, payload);
+        await this.invoicesService.emitirNotaFiscal(payload);
     }
 }

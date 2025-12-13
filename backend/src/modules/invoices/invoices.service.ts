@@ -6,42 +6,48 @@ import { lastValueFrom } from 'rxjs';
 export class InvoicesService {
     private readonly logger = new Logger(InvoicesService.name);
 
+    // Injetamos o HttpService para poder chamar APIs externas (REST)
     constructor(private readonly httpService: HttpService) { }
 
-    async emitirNotaFiscal(pedidoId: string, dadosVenda: any) {
-        this.logger.log(`Iniciando emissão de NF para pedido ${pedidoId}...`);
+    async emitirNotaFiscal(venda: any) {
+        this.logger.log(`Iniciando emissão de NF para o pedido ${venda.id}...`);
+
+        const url = process.env.NFE_API_URL; // Ex: https://api.focusnfe.com.br/v2/
+        const token = process.env.NFE_API_TOKEN;
+
+        if (!url || !token) {
+            throw new Error('URL ou Token da API de Nota Fiscal não configurados');
+        }
+        // Payload fictício padrão ABRASF/FocusNFe
+        const payload = {
+            natureza_operacao: 'Venda de Mercadoria',
+            data_emissao: new Date().toISOString(),
+            cliente: {
+                nome: venda.clienteNome,
+                cpf: venda.clienteCpf,
+                email: venda.clienteEmail,
+            },
+            servico: {
+                valor: venda.valorTotal,
+                discriminacao: `Venda de produtos referente ao pedido ${venda.id}`,
+            },
+        };
 
         try {
-            // Exemplo genérico de chamada para API Fiscal
-            const url = process.env.NFE_API_URL;
-            const apiKey = process.env.NFE_API_KEY;
-
-            if (!url || !apiKey) {
-                throw new Error('NFE_API_URL and NFE_API_KEY must be defined in environment variables');
-            }
-
-            const payload = {
-                natureza_operacao: 'Venda',
-                cliente: dadosVenda.cliente,
-                itens: dadosVenda.itens,
-                // ... mapear os dados do seu banco para o formato da API Fiscal
-            };
-
-            // Faz a requisição POST para a API externa
-            const response = await lastValueFrom(
+            // O 'lastValueFrom' transforma o Observable do Axios em uma Promise (padrão moderno do Nest)
+            const { data } = await lastValueFrom(
                 this.httpService.post(url, payload, {
-                    auth: { username: apiKey, password: '' }
-                })
+                    auth: { username: token, password: '' }, // Basic Auth comum em APIs fiscais
+                }),
             );
 
-            this.logger.log(`Nota emitida com sucesso! Protocolo: ${response.data.protocolo}`);
-
-            // AQUI: Salvar o link do PDF e XML no seu banco de dados na tabela de Vendas/Notas
-            return response.data;
+            this.logger.log(`Nota Fiscal emitida! Status: ${data.status}`);
+            return data; // Retorna o JSON da API fiscal (com link do PDF, XML, etc)
 
         } catch (error) {
             this.logger.error(`Erro ao emitir NF: ${error.message}`, error.response?.data);
-            // Importante: Implementar lógica de "fila" ou "retry" caso a API fiscal esteja fora do ar
+            // Dica Pro: Aqui você salvaria no banco que a nota "Falhou" para tentar de novo depois
+            throw error;
         }
     }
 }

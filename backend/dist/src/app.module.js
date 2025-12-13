@@ -11,13 +11,16 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const app_controller_1 = require("./app.controller");
 const prisma_module_1 = require("./prisma/prisma.module");
-const auth_module_1 = require("./auth/auth.module");
-const users_module_1 = require("./users/users.module");
+const auth_module_1 = require("./modules/auth/auth.module");
+const users_module_1 = require("./modules/users/users.module");
 const products_module_1 = require("./products/products.module");
-const sales_module_1 = require("./sales/sales.module");
-const customers_module_1 = require("./customers/customers.module");
-const analytics_module_1 = require("./analytics/analytics.module");
-const notifications_module_1 = require("./notifications/notifications.module");
+const sales_module_1 = require("./modules/sales/sales.module");
+const customers_module_1 = require("./modules/customers/customers.module");
+const analytics_module_1 = require("./modules/analytics/analytics.module");
+const notifications_module_1 = require("./modules/notifications/notifications.module");
+const event_emitter_1 = require("@nestjs/event-emitter");
+const payments_module_1 = require("./modules/payments/payments.module");
+const invoices_module_1 = require("./modules/invoices/invoices.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -28,6 +31,7 @@ exports.AppModule = AppModule = __decorate([
                 isGlobal: true,
                 envFilePath: '.env',
             }),
+            event_emitter_1.EventEmitterModule.forRoot(),
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
@@ -36,6 +40,8 @@ exports.AppModule = AppModule = __decorate([
             customers_module_1.CustomersModule,
             analytics_module_1.AnalyticsModule,
             notifications_module_1.NotificationsModule,
+            payments_module_1.PaymentsModule,
+            invoices_module_1.InvoicesModule,
         ],
         controllers: [app_controller_1.AppController],
     })
