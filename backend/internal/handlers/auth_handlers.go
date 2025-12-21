@@ -13,26 +13,40 @@ import (
 )
 
 func Register(c *gin.Context) {
-	var input models.User
+	// Crie uma struct temporária só para receber os dados
+	var input struct {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"` // Aqui não tem o traço "-", então funciona!
+		Role     string `json:"role"`
+	}
+
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	cleanPassword := strings.TrimSpace(input.Password)
-
-	hashed, err := bcrypt.GenerateFromPassword([]byte(cleanPassword), 10)
-	input.Password = string(hashed)
+	// Hash password
+	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), 10)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not hash password"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro no hash"})
 		return
 	}
 
-	if err := config.DB.Create(&input).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create user"})
+	// Agora joga os dados para a Model do banco
+	user := models.User{
+		Name:     input.Name,
+		Email:    input.Email,
+		Password: string(hashed), // O hash vai corretamente
+		Role:     input.Role,
+	}
+
+	if err := config.DB.Create(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao criar usuário"})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"message": "User registered"})
+
+	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully"})
 }
 
 func Login(c *gin.Context) {
