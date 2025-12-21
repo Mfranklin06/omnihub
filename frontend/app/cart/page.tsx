@@ -1,33 +1,43 @@
 'use client'
 
-import { initMercadoPago } from '@mercadopago/sdk-react'
 import { StoreHeader } from '../components/StoreHeader'
 import { useCartStore } from '@/lib/store'
 import Image from 'next/image'
-import { Trash2, ArrowRight } from 'lucide-react'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-
-initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!)
+import { Trash2, ArrowRight, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { initMercadoPago, Wallet } from '@mercadopago/sdk-react'
+import Link from 'next/link'
 
 export default function CartPage() {
     const { cart, removeFromCart, totalPrice, clearCart } = useCartStore()
     const [loading, setLoading] = useState(false)
-    const router = useRouter()
     const [mounted, setMounted] = useState(false)
 
-    // Hydration fix
-    useState(() => setMounted(true))
+    // Estado para guardar o ID da preferência do Mercado Pago
+    const [preferenceId, setPreferenceId] = useState<string | null>(null)
+
+    // 1. Inicializa o SDK do Mercado Pago
+    useEffect(() => {
+        setMounted(true)
+        if (process.env.NEXT_PUBLIC_MP_PUBLIC_KEY) {
+            initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY, {
+                locale: 'pt-BR'
+            })
+        }
+    }, [])
+
     if (!mounted) return null
 
     async function handleCheckout() {
         setLoading(true)
         try {
+            // 2. Prepara os dados para o Go
             const payload = {
                 items: cart.map(item => ({ product_id: item.id, quantity: item.quantity })),
-                source: 'ecommerce' // Importante!
+                source: 'ecommerce'
             }
 
+            // 3. Chama o Backend em Go
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ecommerce/checkout`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -35,19 +45,20 @@ export default function CartPage() {
             })
 
             const data = await res.json()
-            if (!res.ok) throw new Error('Erro ao processar pedido' + data.error)
 
-            if (data.preference_id) {
-                const mplink = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${data.preference_id}`
-                window.location.href = mplink
+            if (!res.ok) {
+                throw new Error(data.error || 'Erro ao criar pedido')
             }
 
-            //alert('Compra realizada com sucesso!')
-            //clearCart()
-            //router.push('/')
+            // 4. EM VEZ DE REDIRECIONAR, salvamos o ID
+            // Isso fará o componente "Wallet" aparecer na tela
+            if (data.preference_id) {
+                setPreferenceId(data.preference_id)
+            }
 
         } catch (error) {
-            alert('Erro no checkout. Verifique o backend.' + error)
+            console.error(error)
+            alert('Erro ao iniciar pagamento.')
         } finally {
             setLoading(false)
         }
@@ -61,9 +72,14 @@ export default function CartPage() {
                 <h1 className="text-3xl font-bold mb-8">Seu Carrinho</h1>
 
                 {cart.length === 0 ? (
-                    <p className="text-gray-500">Seu carrinho está vazio.</p>
+                    <div className="text-center py-20">
+                        <p className="text-gray-500 mb-4">Seu carrinho está vazio.</p>
+                        <Link href="/" className="text-black font-bold underline">Voltar para a loja</Link>
+                    </div>
                 ) : (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+                        {/* Lista de Produtos */}
                         <div className="divide-y divide-gray-100">
                             {cart.map((item) => (
                                 <div key={item.id} className="p-6 flex gap-4 items-center">
@@ -76,26 +92,65 @@ export default function CartPage() {
                                     </div>
                                     <div className="text-right">
                                         <p className="font-bold">R$ {(item.price * item.quantity).toFixed(2)}</p>
-                                        <button onClick={() => removeFromCart(item.id)} className="text-red-500 text-xs mt-1 flex items-center gap-1 justify-end hover:underline">
-                                            <Trash2 size={12} /> Remover
-                                        </button>
+                                        {/* Só permite remover se ainda não gerou o pagamento */}
+                                        {!preferenceId && (
+                                            <button onClick={() => removeFromCart(item.id)} className="text-red-500 text-xs mt-1 flex items-center gap-1 justify-end hover:underline">
+                                                <Trash2 size={12} /> Remover
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="p-6 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-gray-500">Total</p>
+                        {/* Área de Totais e Ação */}
+                        <div className="p-6 bg-gray-50 border-t border-gray-100">
+                            <div className="flex justify-between items-center mb-6">
+                                <p className="text-sm text-gray-500">Total a Pagar</p>
                                 <p className="text-2xl font-bold">R$ {totalPrice().toFixed(2)}</p>
                             </div>
-                            <button
-                                onClick={handleCheckout}
-                                disabled={loading}
-                                className="bg-black text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 hover:bg-gray-800 disabled:opacity-50"
-                            >
-                                {loading ? 'Processando...' : 'Finalizar Compra'} <ArrowRight size={18} />
-                            </button>
+
+                            {/* LÓGICA DE TROCA DE BOTÃO */}
+                            {preferenceId ? (
+                                <div className="animate-in fade-in zoom-in duration-300">
+                                    <p className="text-center text-sm text-gray-500 mb-2">Escolha como pagar:</p>
+
+                                    {/* COMPONENTE DO MERCADO PAGO */}
+                                    <div className="mp-wallet-container">
+                                        <Wallet
+                                            initialization={{ preferenceId: preferenceId }}
+                                            customization={
+                                                {
+                                                    valueProp: 'smart_option'
+                                                }
+                                            }
+                                        />
+                                    </div>
+
+                                    <button
+                                        onClick={() => setPreferenceId(null)}
+                                        className="w-full text-center text-xs text-gray-400 mt-4 hover:text-black underline"
+                                    >
+                                        Cancelar e voltar
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleCheckout}
+                                    disabled={loading}
+                                    className="w-full bg-black text-white px-6 py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 hover:bg-gray-800 disabled:opacity-50 transition-all"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <Loader2 className="animate-spin" /> Processando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Finalizar Compra <ArrowRight size={20} />
+                                        </>
+                                    )}
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
