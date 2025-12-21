@@ -36,7 +36,7 @@ func RoleMiddleware(requiredRole string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userRole := c.GetString("role")
 		if userRole != requiredRole && userRole != "admin" { // Admin can access everything
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Acesso negado: Você não é staff nem admin"})
 			return
 		}
 		c.Next()
