@@ -3,6 +3,8 @@ package handlers
 import (
 	"backend/config"
 	"backend/internal/models"
+	"backend/internal/services"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -72,8 +74,34 @@ func CreateOrder(c *gin.Context) {
 		return
 	}
 
+	var mpItems []struct {
+		Title     string
+		Quantity  int
+		UnitPrice float64
+	}
+	for _, item := range order.Items {
+		mpItems = append(mpItems, struct {
+			Title     string
+			Quantity  int
+			UnitPrice float64
+		}{
+			Title:     item.Product.Name, // Ou busque o nome certo
+			Quantity:  item.Quantity,
+			UnitPrice: item.UnitPrice,
+		})
+	}
+	prefID, err := services.CreatePreference(mpItems, fmt.Sprintf("%d", order.ID))
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao conectar com Mercado Pago"})
+		return
+	}
+
 	tx.Commit()
-	c.JSON(http.StatusCreated, order)
+	c.JSON(http.StatusCreated, gin.H{
+		"order_id":      order.ID,
+		"preference_id": prefID, // O Frontend vai usar isso!
+	})
 }
 
 /*

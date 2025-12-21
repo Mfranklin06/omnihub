@@ -42,7 +42,7 @@ export async function loginAction(prevState: LoginState, formData: FormData) {
         }
 
     } catch (err) {
-        return { error: 'Erro de conexão com o servidor' }
+        return { error: 'Erro de conexão com o servidor' + err }
     }
 
     // Redirect fora do try/catch é boa prática no Next.js

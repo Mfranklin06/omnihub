@@ -1,11 +1,14 @@
 'use client'
 
+import { initMercadoPago } from '@mercadopago/sdk-react'
 import { StoreHeader } from '../components/StoreHeader'
 import { useCartStore } from '@/lib/store'
 import Image from 'next/image'
 import { Trash2, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+
+initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!)
 
 export default function CartPage() {
     const { cart, removeFromCart, totalPrice, clearCart } = useCartStore()
@@ -31,11 +34,17 @@ export default function CartPage() {
                 body: JSON.stringify(payload)
             })
 
-            if (!res.ok) throw new Error('Erro ao processar pedido')
+            const data = await res.json()
+            if (!res.ok) throw new Error('Erro ao processar pedido' + data.error)
 
-            alert('Compra realizada com sucesso!')
-            clearCart()
-            router.push('/')
+            if (data.preference_id) {
+                const mplink = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${data.preference_id}`
+                window.location.href = mplink
+            }
+
+            //alert('Compra realizada com sucesso!')
+            //clearCart()
+            //router.push('/')
 
         } catch (error) {
             alert('Erro no checkout. Verifique o backend.' + error)

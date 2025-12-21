@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Search, Trash2, ShoppingCart, Plus, Minus, CheckCircle } from 'lucide-react'
+import { Search, ShoppingCart, Plus, Minus, CheckCircle } from 'lucide-react' // we can add next Trash2 to the import if needed
 import { useRouter } from 'next/navigation'
 
 // Tipos
@@ -88,11 +88,11 @@ export default function POSInterface({ products, token }: { products: Product[],
             try {
                 data = await res.json();
             } catch (jsonError) {
-                throw new Error(`Erro do Servidor (${res.status}): Resposta não é JSON.`);
+                throw new Error(`Erro do Servidor (${res.status}): Resposta não é JSON.` + jsonError);
             }
 
             if (!res.ok) {
-                throw new Error(data.error || `Erro desconhecido (${res.status})`);
+                throw new Error(data.error || `Erro desconhecido (${res.status})` + data.error);
             }
 
             alert('Venda realizada com sucesso!')
@@ -149,7 +149,7 @@ export default function POSInterface({ products, token }: { products: Product[],
                                         {product.stock_qty} un
                                     </span>
                                 </div>
-                                <h3 className="font-medium text-gray-900 text-sm line-clamp-2 min-h-[40px]">{product.name}</h3>
+                                <h3 className="font-medium text-gray-900 text-sm line-clamp-2 min-h-10">{product.name}</h3>
                                 <p className="font-bold text-gray-900 mt-1">R$ {product.price.toFixed(2)}</p>
                             </button>
                         ))}

@@ -37,8 +37,9 @@ export async function createProductAction(prevState: ProductActionState, formDat
     let data;
     try {
         data = await res.json();
-    } catch (e) {
-        return { error: `Erro no servidor: ${res.status} ${res.statusText}` };
+        console.log(data)
+    } catch (err) {
+        return { error: `Erro no servidor: ${res.status} ${res.statusText}` + err };
     }
 
     if (!res.ok) {

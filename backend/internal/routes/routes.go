@@ -14,10 +14,10 @@ func SetupRoutes(r *gin.Engine) {
 	{
 		api.POST("/register", handlers.Register)
 		api.POST("/login", handlers.Login)
-
+		api.POST("/ecommerce/checkout", handlers.CreateOrder)
+		api.POST("/webhook/mercadopago", handlers.HandleWebhook)
 		// Public Store Routes (E-commerce - View Products)
 		api.GET("/products", handlers.GetProducts) // Assume this exists
-		api.POST("/ecommerce/checkout", handlers.CreateOrder)
 	}
 
 	// Protected Routes
