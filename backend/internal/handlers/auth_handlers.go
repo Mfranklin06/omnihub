@@ -6,6 +6,7 @@ import (
 	"backend/pkg/utils"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -18,13 +19,14 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Hash password
-	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), 10)
+	cleanPassword := strings.TrimSpace(input.Password)
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(cleanPassword), 10)
+	input.Password = string(hashed)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not hash password"})
 		return
 	}
-	input.Password = string(hashed)
 
 	if err := config.DB.Create(&input).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create user"})
@@ -43,6 +45,8 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	cleanPassword := strings.TrimSpace(input.Password)
+
 	var user models.User
 	if err := config.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "email not found"})
@@ -54,7 +58,7 @@ func Login(c *gin.Context) {
 	fmt.Println("Hash no Banco:", user.Password) // Veja se começa com $2a$
 	fmt.Println("Senha enviada:", input.Password)
 
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(cleanPassword))
 
 	if err != nil {
 		fmt.Println("Erro Bcrypt:", err)
