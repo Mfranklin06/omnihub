@@ -17,6 +17,7 @@ func SetupRoutes(r *gin.Engine) {
 
 		// Public Store Routes (E-commerce - View Products)
 		api.GET("/products", handlers.GetProducts) // Assume this exists
+		api.POST("/ecommerce/checkout", handlers.CreateOrder)
 	}
 
 	// Protected Routes
@@ -24,7 +25,6 @@ func SetupRoutes(r *gin.Engine) {
 	protected.Use(middleware.AuthMiddleware())
 	{
 		// E-commerce User Routes
-		protected.POST("/ecommerce/checkout", handlers.CreateOrder)
 
 		// POS Routes (Staff Only)
 		pos := protected.Group("/pos")

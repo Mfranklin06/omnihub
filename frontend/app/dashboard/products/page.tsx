@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { Plus } from 'lucide-react'
 
 
-interface Product {
+export interface Product {
     id: number
     name: string
     sku: string
