@@ -18,7 +18,11 @@ func Register(c *gin.Context) {
 	}
 
 	// Hash password
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(input.Password), 14)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), 10)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not hash password"})
+		return
+	}
 	input.Password = string(hashed)
 
 	if err := config.DB.Create(&input).Error; err != nil {
@@ -33,7 +37,6 @@ func Login(c *gin.Context) {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-	// ... Bind JSON ... (omitted for brevity)
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
