@@ -76,6 +76,7 @@ func CreateOrder(c *gin.Context) {
 	c.JSON(http.StatusCreated, order)
 }
 
+/*
 // GetDashboardStats returns data for the Dashboard
 func GetDashboardStats(c *gin.Context) {
 	var totalSales float64
@@ -88,4 +89,4 @@ func GetDashboardStats(c *gin.Context) {
 		"total_revenue": totalSales,
 		"total_orders":  countOrders,
 	})
-}
+}*/
