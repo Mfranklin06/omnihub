@@ -4,6 +4,7 @@ import (
 	"backend/config"
 	"backend/internal/models"
 	"backend/pkg/utils"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -48,9 +49,15 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("--- DEBUG LOGIN ---")
+	fmt.Println("Email encontrado:", user.Email)
+	fmt.Println("Hash no Banco:", user.Password) // Veja se começa com $2a$
+	fmt.Println("Senha enviada:", input.Password)
+
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
 
 	if err != nil {
+		fmt.Println("Erro Bcrypt:", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
