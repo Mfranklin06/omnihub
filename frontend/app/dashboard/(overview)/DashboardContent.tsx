@@ -1,7 +1,6 @@
-import { ShoppingBag, AlertTriangle, TrendingUp } from 'lucide-react' // we can add creditcard here
 import { cookies } from 'next/headers'
+import { ShoppingBag, AlertTriangle, TrendingUp } from 'lucide-react'
 
-// Tipagem dos dados que vêm do Go
 type DashboardStats = {
     total_revenue: number
     total_orders: number
@@ -20,12 +19,10 @@ type DashboardStats = {
 }
 
 async function getStats(): Promise<DashboardStats | null> {
-    const cookieStore = cookies()
-    const token = (await cookieStore).get('token')?.value
+    const cookieStore = await cookies()
+    const token = cookieStore.get('token')?.value
 
-    if (!token) {
-        return null
-    }
+    if (!token) return null
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats`, {
         headers: {
@@ -34,16 +31,12 @@ async function getStats(): Promise<DashboardStats | null> {
         cache: 'no-store',
     })
 
-    if (!res.ok) {
-        console.error('Erro ao buscar stats:', res.status)
-        return null
-    }
+    if (!res.ok) return null
 
     return res.json()
 }
 
-
-export default async function DashboardPage() {
+export default async function DashboardContent() {
     const stats = await getStats()
 
     if (!stats) {

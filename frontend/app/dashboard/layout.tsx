@@ -1,16 +1,8 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import { LayoutDashboard, ShoppingBag, LogOut, Package } from 'lucide-react'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-
-// Server Action de Logout (Colocada aqui para simplicidade, ou num arquivo actions.ts separado)
-async function logout() {
-    'use server'
-    const cookieStore = await cookies()
-    cookieStore.delete('token')
-    cookieStore.delete('role')
-    redirect('/login')
-}
+import { logout } from './actions'
 
 export default function DashboardLayout({
     children,
@@ -22,7 +14,7 @@ export default function DashboardLayout({
             {/* --- SIDEBAR --- */}
             <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
                 <div className="p-6 border-b border-gray-100">
-                    <h2 className="text-xl font-bold tracking-tight text-gray-900">Antigravity</h2>
+                    <h2 className="text-xl font-bold tracking-tight text-gray-900">Omnihub</h2>
                     <span className="text-xs text-gray-500 font-medium">Retail System</span>
                 </div>
 
