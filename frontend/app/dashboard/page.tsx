@@ -19,26 +19,45 @@ type DashboardStats = {
     }>
 }
 
-async function getStats() {
-    const cookieStore = await cookies()
-    const token = cookieStore.get('token')?.value
+async function getStats(): Promise<DashboardStats | null> {
+    const cookieStore = cookies()
+    const token = (await cookieStore).get('token')?.value
+
+    if (!token) {
+        return null
+    }
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats`, {
         headers: {
-            'Authorization': `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
         },
-        cache: 'no-store' // Dados em tempo real, sem cache
+        cache: 'no-store',
     })
 
     if (!res.ok) {
-        throw new Error('Falha ao carregar dashboard')
+        console.error('Erro ao buscar stats:', res.status)
+        return null
     }
 
-    return res.json() as Promise<DashboardStats>
+    return res.json()
 }
+
 
 export default async function DashboardPage() {
     const stats = await getStats()
+
+    if (!stats) {
+        return (
+            <div className="p-8 bg-white rounded-xl border border-red-200">
+                <h1 className="text-xl font-bold text-red-600 mb-2">
+                    Erro ao carregar dashboard
+                </h1>
+                <p className="text-gray-600">
+                    Verifique se você está logado e tente novamente.
+                </p>
+            </div>
+        )
+    }
 
     return (
         <div>
