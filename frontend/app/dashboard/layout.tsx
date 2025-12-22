@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import Link from 'next/link'
 import { LayoutDashboard, ShoppingBag, LogOut, Package } from 'lucide-react'
 import { logout } from './actions'
