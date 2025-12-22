@@ -16,6 +16,7 @@ func SetupRoutes(r *gin.Engine) {
 		api.POST("/login", handlers.Login)
 		api.POST("/ecommerce/checkout", handlers.CreateOrder)
 		api.POST("/webhook/mercadopago", handlers.HandleWebhook)
+		api.POST("/ecommerce/process_payment", handlers.ProcessPayment)
 		// Public Store Routes (E-commerce - View Products)
 		api.GET("/products", handlers.GetProducts) // Assume this exists
 	}
