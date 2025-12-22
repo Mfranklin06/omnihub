@@ -3,14 +3,19 @@
 import Link from 'next/link'
 import { ShoppingBag } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
-import { useEffectEvent, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export function StoreHeader() {
     const totalItems = useCartStore((state) => state.totalItems())
     const [mounted, setMounted] = useState(false)
 
     // Evita erro de hidratação (server vs client)
-    useEffectEvent(() => setMounted(true))
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setMounted(true)
+        }, 0)
+        return () => clearTimeout(timer)
+    }, [])
 
     return (
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
