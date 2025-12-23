@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import POSOverview from './PosOverview'
+import POSOverview from './POSOverview'
 
 export default function POSPage() {
     return (
