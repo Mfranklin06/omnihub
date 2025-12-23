@@ -20,8 +20,8 @@ export function StoreHeader() {
     return (
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
             <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                <Link href="/" className="text-xl font-bold tracking-tighter">
-                    Antigravity.
+                <Link href="/" className="text-xl text-black font-bold tracking-tighter">
+                    Omnihub
                 </Link>
 
                 <Link href="/cart" className="relative p-2 hover:bg-gray-100 rounded-full transition">
