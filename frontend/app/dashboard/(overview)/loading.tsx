@@ -1,4 +1,5 @@
-// app/dashboard/loading.tsx
+import DashboardSkeleton from "./DashboardSkeleton";
+
 export default function Loading() {
-    return <p className="p-8">Carregando…</p>
+    return <DashboardSkeleton />
 }
