@@ -1,8 +1,7 @@
 import Image from 'next/image'
-// Vamos criar abaixo
-import { Product } from './dashboard/products/page'
 import { StoreHeader } from './components/StoreHeader'
 import { AddToCartButton } from './components/AddToCardButton'
+import { Product } from './dashboard/products/ProductsOverview'
 
 async function getProducts() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
