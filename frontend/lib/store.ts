@@ -1,4 +1,4 @@
-import { Product } from '@/app/dashboard/products/page'
+import { Product } from '@/app/dashboard/products/ProductsOverview'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
