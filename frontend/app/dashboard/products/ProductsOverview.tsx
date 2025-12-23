@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Plus } from 'lucide-react'
+import { Plus, Package } from 'lucide-react'
 
 export interface Product {
     id: number
@@ -25,83 +25,101 @@ export default async function ProductsOverview() {
     const products = await getProducts()
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Produtos</h1>
+        <section className="space-y-8">
+            {/* Header */}
+            <header className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+                        Produtos
+                    </h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Gerencie catálogo, preços e estoque
+                    </p>
+                </div>
+
                 <Link
                     href="/dashboard/products/new"
-                    className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-gray-800"
+                    className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
                 >
                     <Plus size={16} />
-                    Novo Produto
+                    Novo produto
                 </Link>
-            </div>
+            </header>
 
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
-                        <tr>
-                            <th className="px-6 py-4">Produto</th>
-                            <th className="px-6 py-4">SKU</th>
-                            <th className="px-6 py-4">Preço</th>
-                            <th className="px-6 py-4">Estoque</th>
-                            <th className="px-6 py-4 text-right">Ações</th>
-                        </tr>
-                    </thead>
-
-                    <tbody className="divide-y divide-gray-100">
-                        {products.map(product => (
-                            <tr key={product.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="relative w-10 h-10 rounded bg-gray-100 overflow-hidden">
-                                            {product.image_url && (
-                                                <Image
-                                                    src={product.image_url}
-                                                    alt={product.name}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            )}
-                                        </div>
-                                        <span className="font-medium text-gray-900">
-                                            {product.name}
-                                        </span>
+            {/* Lista */}
+            <div className="space-y-3">
+                {products.map(product => (
+                    <article
+                        key={product.id}
+                        className="group flex items-center justify-between gap-6 rounded-2xl border border-gray-100 bg-white p-4 transition hover:shadow-sm"
+                    >
+                        {/* Left */}
+                        <div className="flex items-center gap-4 min-w-0">
+                            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-gray-100">
+                                {product.image_url ? (
+                                    <Image
+                                        src={product.image_url}
+                                        alt={product.name}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex h-full w-full items-center justify-center text-gray-400">
+                                        <Package size={20} />
                                     </div>
-                                </td>
-                                <td className="px-6 py-4 text-gray-600">{product.sku}</td>
-                                <td className="px-6 py-4 font-medium">
-                                    R$ {product.price.toFixed(2)}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span
-                                        className={`px-2 py-1 rounded text-xs font-medium ${product.stock_qty > 0
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-red-100 text-red-700'
-                                            }`}
-                                    >
-                                        {product.stock_qty} un
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right text-gray-400">
-                                    Editar
-                                </td>
-                            </tr>
-                        ))}
+                                )}
+                            </div>
 
-                        {products.length === 0 && (
-                            <tr>
-                                <td
-                                    colSpan={5}
-                                    className="px-6 py-12 text-center text-gray-500"
+                            <div className="min-w-0">
+                                <h3 className="truncate font-medium text-gray-900">
+                                    {product.name}
+                                </h3>
+                                <p className="text-xs text-gray-500">
+                                    SKU: {product.sku}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Right */}
+                        <div className="flex items-center gap-8">
+                            <div className="text-right">
+                                <p className="text-sm font-semibold text-gray-900">
+                                    R$ {product.price.toFixed(2)}
+                                </p>
+                                <p className="text-xs text-gray-500">Preço</p>
+                            </div>
+
+                            <div>
+                                <span
+                                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${product.stock_qty > 0
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-red-100 text-red-700'
+                                        }`}
                                 >
-                                    Nenhum produto cadastrado ainda.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                                    {product.stock_qty > 0
+                                        ? `${product.stock_qty} em estoque`
+                                        : 'Sem estoque'}
+                                </span>
+                            </div>
+
+                            <Link
+                                href={`/dashboard/products/${product.id}`}
+                                className="text-sm font-medium text-gray-400 hover:text-black"
+                            >
+                                Editar
+                            </Link>
+                        </div>
+                    </article>
+                ))}
+
+                {products.length === 0 && (
+                    <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+                        <p className="text-sm text-gray-500">
+                            Nenhum produto cadastrado ainda.
+                        </p>
+                    </div>
+                )}
             </div>
-        </div>
+        </section>
     )
 }

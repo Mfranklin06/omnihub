@@ -1,16 +1,13 @@
 import { Suspense } from 'react'
 import ProductsOverview from './ProductsOverview'
+import LoadingProducts from './loading'
 
 export default function ProductsPage() {
     return (
-        <Suspense fallback={<ProductsLoading />}>
+        <Suspense fallback={<LoadingProducts />}>
             <ProductsOverview />
         </Suspense>
     )
 }
 
-function ProductsLoading() {
-    return (
-        <div className="h-[60vh] bg-gray-100 rounded-xl animate-pulse" />
-    )
-}
+
